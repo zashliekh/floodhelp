@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>FloodHelp V2 — YIP Prototype</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<style>
+*{box-sizing:border-box}body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:#eef6f8;color:#102a43}
+.app{max-width:1100px;margin:auto;min-height:100vh;background:#fff}.top{background:#073b4c;color:#fff;padding:15px 18px;display:flex;justify-content:space-between;align-items:center}.brand{font-size:22px;font-weight:850}.tag{font-size:11px;opacity:.8;margin-top:2px}
+nav{display:flex;gap:6px;padding:9px;background:#f4f8fa;overflow:auto;position:sticky;top:0;z-index:10}nav button{white-space:nowrap;background:#fff;color:#24506a;border:0;border-radius:10px;padding:10px 13px;font-weight:750}nav button.active{background:#087f8c;color:#fff}
+main{padding:17px}.hero{background:linear-gradient(135deg,#0b7285,#087f8c);color:#fff;border-radius:18px;padding:22px}.hero h1{margin:0 0 7px;font-size:30px}.hero p{margin:0 0 16px}.sos{background:#d62828;color:#fff;font-size:19px;width:100%;padding:16px;border:0;border-radius:13px;font-weight:850}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:13px;margin-top:15px}.card{border:1px solid #dce7eb;border-radius:15px;padding:15px;background:#fff;box-shadow:0 3px 12px #0b39540d}.card h3{margin:0 0 8px}.metric{font-size:25px;font-weight:850}.small{font-size:13px;color:#58727f}.map{height:470px;border-radius:16px;overflow:hidden;border:1px solid #c7dde3}.leaflet-container{font:inherit}.badge{display:inline-block;padding:4px 8px;border-radius:999px;font-size:11px;font-weight:800;margin:3px 2px 0 0}.green{background:#d8f3dc;color:#176b35}.orange{background:#ffe8c2;color:#925500}.red{background:#ffd6d6;color:#9d1616}.camp{display:flex;justify-content:space-between;gap:12px;align-items:center;border:1px solid #dde8ec;border-radius:13px;padding:13px}.list{display:grid;gap:10px}.camp button,.primary{background:#087f8c;color:#fff;border:0;border-radius:10px;padding:10px 13px;font-weight:750}.notice{padding:12px;border-radius:10px;background:#fff5d6;margin:12px 0;font-size:13px}.hidden{display:none}.modal{position:fixed;inset:0;background:#0008;display:flex;align-items:center;justify-content:center;padding:18px;z-index:50}.modalbox{background:#fff;max-width:520px;width:100%;border-radius:18px;padding:21px}.choices{display:grid;grid-template-columns:1fr 1fr;gap:9px}.choices button{background:#edf5f7;text-align:left;border:0;border-radius:11px;padding:13px;font-weight:750}.choices button.selected{outline:3px solid #087f8c}.secondary{background:#e8eef0;border:0;border-radius:10px;padding:11px 14px;font-weight:700}.row{display:flex;gap:8px;flex-wrap:wrap}.pill{padding:7px 10px;border-radius:9px;background:#f1f6f7;font-size:12px}.loc{background:#e5f7f8;border-radius:12px;padding:12px;margin:10px 0}.danger{color:#a91616;font-weight:800}
+@media(max-width:600px){main{padding:13px}.map{height:390px}.hero h1{font-size:26px}}
+</style>
+</head>
+<body>
+<div class="app">
+<header class="top"><div><div class="brand">🌊 FloodHelp</div><div class="tag">YIP V2 • Emergency coordination prototype</div></div><div id="net">🟢 Online</div></header>
+<nav>
+<button class="active" onclick="show('home',this)">Home</button>
+<button onclick="show('map',this)">🗺️ Live Map</button>
+<button onclick="show('camps',this)">🏕️ Camps</button>
+<button onclick="show('rescue',this)">🚨 Rescue</button>
+</nav>
+<main>
+<section id="home">
+<div class="hero"><h1>Are you safe?</h1><p>Find the nearest suitable relief camp or send an emergency request.</p><button class="sos" onclick="openSOS()">🆘 I NEED HELP</button></div>
+<div class="grid">
+<div class="card"><h3>📍 Your location</h3><div id="locationStatus" class="metric">Not located</div><div class="small" id="coords">Tap “Locate me” on the map.</div></div>
+<div class="card"><h3>🏕️ Nearest suitable camp</h3><div class="metric" id="nearestHome">1.8 km</div><div class="small" id="nearestName">Green Valley Relief Camp</div></div>
+<div class="card"><h3>🚧 Road warning</h3><div class="metric">1</div><div class="small">demo blocked route</div></div>
+</div>
+<div class="row" style="margin-top:14px"><button class="primary" onclick="showMapAndLocate()">📍 Locate me & find camp</button><button class="secondary" onclick="toggleOffline()">📡 Offline mode</button></div>
+<div class="notice">⚠️ <b>YIP prototype:</b> Camp, road and emergency data are simulated. GPS is real only if your browser permits location access. This is not a live rescue service.</div>
+</section>
+
+<section id="map" class="hidden">
+<h2>🗺️ Flood & Safe-Camp Map</h2>
+<div class="row" style="margin-bottom:9px"><button class="primary" onclick="locateMe()">📍 Use my location</button><button class="secondary" onclick="showNearest()">🏕️ Nearest suitable camp</button></div>
+<div id="mapbox" class="map"></div>
+<div id="mapInfo" class="loc">Demo map loaded. <b>Blue = your location</b>, 🏕️ = relief camp, red line = blocked road.</div>
+</section>
+
+<section id="camps" class="hidden">
+<h2>🏕️ Nearby Relief Camps</h2>
+<p class="small">The app ranks camps by distance and basic availability. In a real deployment, only authorized/verified camp records should be shown.</p>
+<div id="campList" class="list"></div>
+</section>
+
+<section id="rescue" class="hidden">
+<h2>🚨 Rescue Priority Dashboard</h2>
+<div class="grid">
+<div class="card"><h3>🔴 Critical</h3><div class="metric" id="critical">0</div><div class="small">Immediate life-safety needs</div></div>
+<div class="card"><h3>🟠 Urgent</h3><div class="metric" id="urgent">0</div><div class="small">Vulnerable/urgent assistance</div></div>
+<div class="card"><h3>🟡 Important</h3><div class="metric" id="important">0</div><div class="small">Food, water or medicine</div></div>
+</div>
+<div class="card" style="margin-top:15px"><h3>Latest requests</h3><div id="requests" class="list"></div></div>
+</section>
+</main>
+</div>
+
+<div id="modal" class="modal hidden"><div class="modalbox">
+<h2>🆘 Request Help</h2><p>Choose the most urgent need.</p>
+<div class="choices">
+<button onclick="selectNeed(this,'Rescue / trapped','critical')">🛟 Rescue / trapped</button>
+<button onclick="selectNeed(this,'Medical emergency','critical')">🏥 Medical emergency</button>
+<button onclick="selectNeed(this,'Elderly / child assistance','urgent')">👴 Elderly / child</button>
+<button onclick="selectNeed(this,'Medicine','important')">💊 Medicine</button>
+<button onclick="selectNeed(this,'Drinking water','important')">💧 Water</button>
+<button onclick="selectNeed(this,'Food','important')">🍚 Food</button>
+</div>
+<p id="selected" class="small">No request selected.</p>
+<button class="primary" onclick="sendSOS()">SEND SOS WITH LOCATION 📍</button>
+<button type="button" id="cancelSOS" class="secondary" style="float:right">Cancel</button>
+</div></div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+const camps=[
+{name:"Green Valley Relief Camp",lat:11.2588,lng:75.7804,cap:300,occ:180,food:"Available",water:"Available",medical:"Available",access:"Safe",type:"General"},
+{name:"Riverside Community Camp",lat:11.2648,lng:75.7950,cap:200,occ:195,food:"Available",water:"Limited",medical:"No",access:"Caution",type:"General"},
+{name:"Hillview Evacuation Centre",lat:11.2480,lng:75.7650,cap:450,occ:210,food:"Available",water:"Available",medical:"Available",access:"Safe",type:"Medical support"}
+];
+// Demo starting point near Kozhikode; real GPS can replace it.
+let user={lat:11.2600,lng:75.7750,real:false}, map, userMarker, campMarkers=[], selected=null, requests=[];
+
+function show(id,btn){document.querySelectorAll('main section').forEach(s=>s.classList.add('hidden'));document.getElementById(id).classList.remove('hidden');document.querySelectorAll('nav button').forEach(b=>b.classList.remove('active'));if(btn)btn.classList.add('active');if(id==='map')setTimeout(initMap,100);if(id==='camps')renderCamps();
+document.getElementById('cancelSOS').addEventListener('click',closeSOS);
+document.getElementById('modal').addEventListener('click',e=>{
+  if(e.target.id==='modal') closeSOS();
+});if(id==='rescue')renderRequests();}
+function initMap(){
+ if(map){map.invalidateSize();return}
+ map=L.map('mapbox').setView([user.lat,user.lng],13);
+ L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'© OpenStreetMap contributors'}).addTo(map);
+ updateMap();
+}
+function updateMap(){
+ if(!map)return;
+ campMarkers.forEach(m=>m.remove());campMarkers=[];
+ if(userMarker)userMarker.remove();
+ userMarker=L.marker([user.lat,user.lng]).addTo(map).bindPopup(`<b>📍 ${user.real?'Your current location':'Demo location'}</b>`);
+ camps.forEach((c,i)=>{let m=L.marker([c.lat,c.lng]).addTo(map).bindPopup(`<b>🏕️ ${c.name}</b><br>${distance(user,c).toFixed(1)} km away<br>Capacity: ${c.cap-c.occ} available<br>Food: ${c.food}<br>Water: ${c.water}<br>Medical: ${c.medical}<br><button onclick="campDetails(${i})">View camp</button>`);campMarkers.push(m)});
+ // Simulated blocked road for demonstration
+ L.polyline([[user.lat,user.lng],[camps[0].lat,camps[0].lng]],{color:'#d62828',weight:7,dashArray:'10 8'}).addTo(map).bindPopup('⚠️ Demo: reported flooded/blocked route');
+}
+function distance(a,b){const R=6371,dLat=(b.lat-a.lat)*Math.PI/180,dLon=(b.lng-a.lng)*Math.PI/180;const x=Math.sin(dLat/2)**2+Math.cos(a.lat*Math.PI/180)*Math.cos(b.lat*Math.PI/180)*Math.sin(dLon/2)**2;return R*2*Math.atan2(Math.sqrt(x),Math.sqrt(1-x))}
+function nearest(){return camps.filter(c=>c.cap-c.occ>0).sort((a,b)=>distance(user,a)-distance(user,b))[0]}
+function showNearest(){let c=nearest();map.setView([c.lat,c.lng],14);campMarkers[camps.indexOf(c)].openPopup();document.getElementById('mapInfo').innerHTML=`🏕️ <b>Nearest suitable camp:</b> ${c.name} — ${distance(user,c).toFixed(1)} km. <span class="badge green">${c.cap-c.occ} spaces</span>`}
+function showMapAndLocate(){show('map',document.querySelector('nav button:nth-child(2)'));setTimeout(locateMe,250)}
+function locateMe(){
+ if(!navigator.geolocation){fallbackLocation();return}
+ navigator.geolocation.getCurrentPosition(pos=>{user={lat:pos.coords.latitude,lng:pos.coords.longitude,real:true};document.getElementById('locationStatus').textContent='Located';document.getElementById('coords').textContent=user.lat.toFixed(5)+', '+user.lng.toFixed(5);updateMap();map.setView([user.lat,user.lng],14);let c=nearest();document.getElementById('nearestHome').textContent=distance(user,c).toFixed(1)+' km';document.getElementById('nearestName').textContent=c.name;document.getElementById('mapInfo').innerHTML=`📍 <b>Location found.</b> Nearest available camp: ${c.name} (${distance(user,c).toFixed(1)} km).`},()=>fallbackLocation(),{enableHighAccuracy:true,timeout:8000});
+}
+function fallbackLocation(){user={lat:11.2600,lng:75.7750,real:false};document.getElementById('locationStatus').textContent='Demo location';document.getElementById('coords').textContent='GPS permission unavailable';updateMap();map.setView([user.lat,user.lng],13);alert('GPS could not be accessed. The prototype is using its simulated Kerala location.')}
+function renderCamps(){document.getElementById('campList').innerHTML=camps.slice().sort((a,b)=>distance(user,a)-distance(user,b)).map((c,i)=>{let idx=camps.indexOf(c),space=c.cap-c.occ;return `<div class="camp"><div><b>🏕️ ${c.name}</b><br><span class="small">${distance(user,c).toFixed(1)} km • ${space} spaces available</span><br><span class="badge ${space>30?'green':'orange'}">${space>30?'Space available':'Nearly full'}</span><span class="badge ${c.access==='Safe'?'green':'orange'}">${c.access}</span><span class="badge ${c.medical==='Available'?'green':'orange'}">Medical: ${c.medical}</span></div><button onclick="campDetails(${idx})">View</button></div>`}).join('')}
+function campDetails(i){let c=camps[i];alert(`${c.name}\\n\\nDistance: ${distance(user,c).toFixed(1)} km\\nAvailable spaces: ${c.cap-c.occ}\\nFood: ${c.food}\\nWater: ${c.water}\\nMedical: ${c.medical}\\nAccess: ${c.access}`)}
+function openSOS(){
+  const modal=document.getElementById('modal');
+  modal.classList.remove('hidden');
+  modal.setAttribute('aria-hidden','false');
+  selected=null;
+  document.querySelectorAll('.choices button').forEach(b=>b.classList.remove('selected'));
+  document.getElementById('selected').textContent='No request selected.';
+}
+function closeSOS(){
+  const modal=document.getElementById('modal');
+  modal.classList.add('hidden');
+  modal.setAttribute('aria-hidden','true');
+}
+function selectNeed(el,need,priority){document.querySelectorAll('.choices button').forEach(b=>b.classList.remove('selected'));el.classList.add('selected');selected={need,priority}}
+function sendSOS(){if(!selected){alert('Please select the type of help needed.');return}requests.unshift({area:user.real?'Current GPS location':'Demo location',need:selected.need,priority:selected.priority,time:'Just now',lat:user.lat,lng:user.lng});closeSOS();show('rescue',document.querySelector('nav button:nth-child(4)'));alert('SOS added to the prototype rescue dashboard. In a real deployment, it would be sent securely to an authorized response system.')}
+function renderRequests(){document.getElementById('requests').innerHTML=requests.length?requests.map(r=>`<div class="camp"><div><b>${r.area}</b><br><span class="small">${r.need} • ${r.time}<br>📍 ${r.lat.toFixed(5)}, ${r.lng.toFixed(5)}</span></div><span class="badge ${r.priority==='critical'?'red':r.priority==='urgent'?'orange':'green'}">${r.priority.toUpperCase()}</span></div>`).join(''):'<div class="small">No new SOS requests yet. Test the SOS button to create one.</div>';let n={critical:0,urgent:0,important:0};requests.forEach(r=>n[r.priority]++);Object.keys(n).forEach(k=>document.getElementById(k).textContent=n[k])}
+function toggleOffline(){document.getElementById('net').textContent='🟠 Offline demo';alert('Offline mode concept enabled. In the production app, essential camp data, emergency contacts and safety instructions would be cached on the device.')}
+window.addEventListener('online',()=>document.getElementById('net').textContent='🟢 Online');window.addEventListener('offline',()=>document.getElementById('net').textContent='🟠 Offline');
+renderCamps();
+document.getElementById('cancelSOS').addEventListener('click',closeSOS);
+document.getElementById('modal').addEventListener('click',e=>{
+  if(e.target.id==='modal') closeSOS();
+});
+</script>
+</body>
+</html>
