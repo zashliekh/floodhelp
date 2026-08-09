@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>FloodHelp — YIP Prototype</title>
+<style>
+*{box-sizing:border-box}body{margin:0;font-family:system-ui,-apple-system,Segoe UI,sans-serif;background:#eef6f8;color:#102a43}
+.app{max-width:1100px;margin:auto;min-height:100vh;background:white}.top{background:#073b4c;color:white;padding:18px 22px;display:flex;justify-content:space-between;align-items:center}.brand{font-size:24px;font-weight:800}.tag{font-size:12px;opacity:.8}
+nav{display:flex;gap:8px;padding:10px;background:#f5f8fa;overflow:auto}button{border:0;border-radius:10px;padding:11px 15px;font-weight:700;cursor:pointer}nav button{background:white;color:#24506a}nav button.active{background:#087f8c;color:white}
+main{padding:20px}.hero{background:linear-gradient(135deg,#0b7285,#087f8c);color:white;border-radius:18px;padding:25px}.hero h1{margin:0 0 7px}.hero p{margin:0 0 18px}.sos{background:#d62828;color:white;font-size:20px;width:100%;padding:18px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:14px;margin-top:18px}.card{border:1px solid #dce7eb;border-radius:15px;padding:17px;background:#fff;box-shadow:0 3px 12px #0b39540d}.card h3{margin-top:0}.metric{font-size:26px;font-weight:800}.small{font-size:13px;color:#58727f}.map{height:430px;border-radius:16px;position:relative;overflow:hidden;background:#d9eef4;border:1px solid #c2dce4}
+.map:before{content:"";position:absolute;inset:-50px;background:repeating-linear-gradient(25deg,transparent 0 58px,#b7dce5 60px 63px),repeating-linear-gradient(115deg,transparent 0 85px,#c5e5d4 87px 90px);opacity:.8}
+.river{position:absolute;left:44%;top:-30px;width:100px;height:520px;background:#5db5d0;transform:rotate(12deg);border-radius:50%;opacity:.75}
+.pin{position:absolute;transform:translate(-50%,-50%);font-size:25px;z-index:3}.you{left:24%;top:67%}.a{left:65%;top:28%}.b{left:76%;top:70%}.c{left:35%;top:23%}
+.legend{position:absolute;bottom:12px;left:12px;background:white;padding:10px;border-radius:10px;font-size:12px;z-index:5}.road{position:absolute;height:8px;background:#777;transform-origin:left center;z-index:2}.blocked{background:#d62828}.r1{left:24%;top:67%;width:47%;transform:rotate(-31deg)}.r2{left:24%;top:67%;width:56%;transform:rotate(2deg)}
+.badge{display:inline-block;padding:4px 8px;border-radius:999px;font-size:12px;font-weight:800}.green{background:#d8f3dc;color:#176b35}.orange{background:#ffe8c2;color:#925500}.red{background:#ffd6d6;color:#9d1616}
+.list{display:grid;gap:12px}.camp{display:flex;justify-content:space-between;gap:12px;align-items:center;border:1px solid #dde8ec;border-radius:12px;padding:14px}.camp button{background:#087f8c;color:white}.hidden{display:none}.modal{position:fixed;inset:0;background:#0008;display:flex;align-items:center;justify-content:center;padding:18px;z-index:20}.modalbox{background:white;max-width:500px;width:100%;border-radius:18px;padding:22px}.choices{display:grid;grid-template-columns:1fr 1fr;gap:10px}.choices button{background:#edf5f7;text-align:left}.choices button.selected{outline:3px solid #087f8c}.primary{background:#087f8c;color:white}.notice{padding:12px;border-radius:10px;background:#fff5d6;margin:12px 0;font-size:13px}
+@media(max-width:600px){main{padding:14px}.map{height:360px}.top{padding:15px}.brand{font-size:20px}}
+</style>
+</head>
+<body>
+<div class="app">
+<header class="top"><div><div class="brand">🌊 FloodHelp</div><div class="tag">YIP Prototype • Simulated emergency data</div></div><div id="net">🟢 Online</div></header>
+<nav>
+<button class="active" onclick="show('home',this)">Home</button>
+<button onclick="show('map',this)">🗺️ Map</button>
+<button onclick="show('camps',this)">🏕️ Camps</button>
+<button onclick="show('rescue',this)">🚨 Rescue</button>
+</nav>
+<main>
+<section id="home">
+<div class="hero"><h1>Are you safe?</h1><p>Find a nearby safe camp or request emergency assistance.</p><button class="sos" onclick="openSOS()">🆘 I NEED HELP</button></div>
+<div class="grid">
+<div class="card"><h3>🏕️ Nearest safe camp</h3><div class="metric">1.8 km</div><div class="small">Green Valley Relief Camp</div></div>
+<div class="card"><h3>🚧 Road warning</h3><div class="metric">1</div><div class="small">reported blocked route</div></div>
+<div class="card"><h3>📡 Offline mode</h3><div class="metric">Ready</div><div class="small">Emergency information saved</div></div>
+</div>
+<div class="notice">⚠️ <b>Prototype:</b> All map, camp and emergency information shown here is simulated for the YIP demonstration.</div>
+</section>
+
+<section id="map" class="hidden">
+<h2>🗺️ Emergency Map</h2>
+<p class="small">Demo location: Kerala flood scenario. Tap a camp marker to view details.</p>
+<div class="map">
+<div class="river"></div><div class="road r1 blocked"></div><div class="road r2"></div>
+<div class="pin you" title="Your location">📍</div>
+<div class="pin a" title="Camp A" onclick="campDetails(0)">🏕️</div>
+<div class="pin b" title="Camp B" onclick="campDetails(1)">🏕️</div>
+<div class="pin c" title="Camp C" onclick="campDetails(2)">🏕️</div>
+<div class="legend">📍 You &nbsp; 🏕️ Relief camp &nbsp; <span style="color:#d62828">━</span> Blocked/flooded road</div>
+</div>
+</section>
+
+<section id="camps" class="hidden">
+<h2>🏕️ Nearby Relief Camps</h2>
+<p class="small">Sorted by estimated distance from the demo user location.</p>
+<div class="list" id="campList"></div>
+</section>
+
+<section id="rescue" class="hidden">
+<h2>🚨 Rescue Priority Dashboard</h2>
+<p class="small">Demo requests created from the SOS screen.</p>
+<div class="grid">
+<div class="card"><h3>🔴 Critical</h3><div class="metric" id="critical">1</div><div class="small">Immediate life-safety needs</div></div>
+<div class="card"><h3>🟠 Urgent</h3><div class="metric" id="urgent">2</div><div class="small">Vulnerable people / urgent support</div></div>
+<div class="card"><h3>🟡 Important</h3><div class="metric" id="important">3</div><div class="small">Food, water or medicine</div></div>
+</div>
+<div class="card" style="margin-top:18px"><h3>Latest SOS requests</h3><div id="requests" class="list"></div></div>
+</section>
+</main>
+</div>
+
+<div id="modal" class="modal hidden"><div class="modalbox">
+<h2>🆘 Request Help</h2><p>Choose the most urgent need.</p>
+<div class="choices" id="choices">
+<button onclick="selectNeed(this,'Rescue / trapped','critical')">🛟 Rescue / trapped</button>
+<button onclick="selectNeed(this,'Medical emergency','critical')">🏥 Medical emergency</button>
+<button onclick="selectNeed(this,'Elderly / child assistance','urgent')">👴 Elderly / child</button>
+<button onclick="selectNeed(this,'Medicine','important')">💊 Medicine</button>
+<button onclick="selectNeed(this,'Drinking water','important')">💧 Water</button>
+<button onclick="selectNeed(this,'Food','important')">🍚 Food</button>
+</div>
+<p id="selected" class="small">No request selected.</p>
+<button class="primary" onclick="sendSOS()">SEND SOS WITH LOCATION 📍</button>
+<button onclick="closeSOS()" style="float:right">Cancel</button>
+</div></div>
+
+<script>
+const camps=[
+{name:"Green Valley Relief Camp",dist:"1.8 km",cap:"300",occ:"180",food:"Available",water:"Available",medical:"Available"},
+{name:"Riverside Community Camp",dist:"2.4 km",cap:"200",occ:"195",food:"Available",water:"Limited",medical:"No"},
+{name:"Hillview Evacuation Centre",dist:"3.1 km",cap:"450",occ:"210",food:"Available",water:"Available",medical:"Available"}
+];
+let selected=null, requests=[
+["Household A","Rescue / trapped","critical","2 min ago"],
+["Area B","Elderly / child assistance","urgent","8 min ago"],
+["Area C","Drinking water","important","11 min ago"]
+];
+function show(id,btn){document.querySelectorAll('main section').forEach(s=>s.classList.add('hidden'));document.getElementById(id).classList.remove('hidden');document.querySelectorAll('nav button').forEach(b=>b.classList.remove('active'));btn.classList.add('active');if(id==='camps')renderCamps();if(id==='rescue')renderRequests()}
+function renderCamps(){document.getElementById('campList').innerHTML=camps.map((c,i)=>`<div class="camp"><div><b>🏕️ ${c.name}</b><br><span class="small">${c.dist} • ${c.occ}/${c.cap} occupied</span><br><span class="badge green">Food</span> <span class="badge green">Water</span> <span class="badge ${c.medical==='Available'?'green':'orange'}">Medical: ${c.medical}</span></div><button onclick="campDetails(${i})">View</button></div>`).join('')}
+function campDetails(i){let c=camps[i];alert(`${c.name}\\n\\nDistance: ${c.dist}\\nCapacity: ${c.cap}\\nOccupied: ${c.occ}\\nFood: ${c.food}\\nWater: ${c.water}\\nMedical: ${c.medical}\\n\\nPrototype navigation: route shown in the demo map.`)}
+function openSOS(){document.getElementById('modal').classList.remove('hidden');selected=null;document.getElementById('selected').textContent='No request selected.'}
+function closeSOS(){document.getElementById('modal').classList.add('hidden')}
+function selectNeed(el,need,priority){document.querySelectorAll('.choices button').forEach(b=>b.classList.remove('selected'));el.classList.add('selected');selected={need,priority};document.getElementById('selected').textContent='Selected: '+need+' • Location: Demo GPS'}
+function sendSOS(){if(!selected){alert('Please select the type of help needed.');return}requests.unshift(['New SOS',''+selected.need,selected.priority,'Just now']);closeSOS();alert('SOS sent in prototype mode. Your demo location and emergency type were added to the rescue dashboard.');document.querySelector('nav button:nth-child(4)').click()}
+function renderRequests(){document.getElementById('requests').innerHTML=requests.map(r=>`<div class="camp"><div><b>${r[0]}</b><br><span class="small">${r[1]} • ${r[3]}</span></div><span class="badge ${r[2]==='critical'?'red':r[2]==='urgent'?'orange':'green'}">${r[2].toUpperCase()}</span></div>`).join('');let n={critical:0,urgent:0,important:0};requests.forEach(r=>n[r[2]]++);document.getElementById('critical').textContent=n.critical;document.getElementById('urgent').textContent=n.urgent;document.getElementById('important').textContent=n.important}
+window.addEventListener('online',()=>document.getElementById('net').textContent='🟢 Online');window.addEventListener('offline',()=>document.getElementById('net').textContent='🟠 Offline');
+</script>
+</body></html>
