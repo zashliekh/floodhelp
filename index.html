@@ -138,7 +138,7 @@ function renderCamps(){
  const list=[...camps].sort((a,b)=>sort==='space'?((b.capacity-b.occupied)-(a.capacity-a.occupied)):sort==='resources'?(resourceCount(b)-resourceCount(a)):(distanceFromUser(a)-distanceFromUser(b)));
  $('campList').innerHTML=list.map(c=>{
   const free=Math.max(0,c.capacity-c.occupied),dist=distanceFromUser(c);
-  return '<article class="camp"><div class="campInfo"><h3>🏕️ '+esc(c.name)+'</h3><p class="small">Approx. '+dist.toFixed(1)+' km straight-line distance • '+free+' demo spaces shown</p><p class="small">Sample occupancy: '+c.occupied+'/'+c.capacity+' • not live availability</p><div class="resourceLine">'+resourceBadge('Food',c.food)+' '+resourceBadge('Water',c.water)+' '+resourceBadge('Medical',c.medical)+' <span class="badge orange">DEMO DATA</span></div></div><div class="campActions"><button onclick="showCampDetails(\\''+c.id+'\\')">Details</button><button class="secondary" onclick="routeToCamp(\\''+c.id+'\\')">Show route</button><button class="secondary" onclick="openGoogleMaps(\\''+c.id+'\\')">Google Maps ↗</button></div></article>';
+  return '<article class="camp"><div class="campInfo"><h3>🏕️ '+esc(c.name)+'</h3><p class="small">Approx. '+dist.toFixed(1)+' km straight-line distance • '+free+' demo spaces shown</p><p class="small">Sample occupancy: '+c.occupied+'/'+c.capacity+' • not live availability</p><div class="resourceLine">'+resourceBadge('Food',c.food)+' '+resourceBadge('Water',c.water)+' '+resourceBadge('Medical',c.medical)+' <span class="badge orange">DEMO DATA</span></div></div><div class="campActions"><button onclick="showCampDetails(\''+c.id+'\')">Details</button><button class="secondary" onclick="routeToCamp(\''+c.id+'\')">Show route</button><button class="secondary" onclick="openGoogleMaps(\''+c.id+'\')">Google Maps ↗</button></div></article>';
  }).join('');
 }
 function resourceBadge(label,value){return '<span class="badge '+(value==='Available'?'green':value==='Limited'?'orange':'gray')+'">'+label+': '+value+'</span>';}
@@ -177,7 +177,7 @@ function initializeMap(){
  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'© OpenStreetMap contributors'}).addTo(map);
  camps.forEach(c=>{
   const marker=L.marker([c.lat,c.lng]).addTo(map);
-  marker.bindPopup('<div class="popupTitle">🏕️ '+esc(c.name)+'</div><div class="popupText">SIMULATED CAMP<br>Sample capacity: '+c.capacity+'<br>Sample food: '+c.food+' • Water: '+c.water+'<br>Availability is not verified.</div><div class="popupActions"><button onclick="routeToCamp(\\''+c.id+'\\')">Show route</button><button onclick="openGoogleMaps(\\''+c.id+'\\')">Google Maps ↗</button></div>');
+  marker.bindPopup('<div class="popupTitle">🏕️ '+esc(c.name)+'</div><div class="popupText">SIMULATED CAMP<br>Sample capacity: '+c.capacity+'<br>Sample food: '+c.food+' • Water: '+c.water+'<br>Availability is not verified.</div><div class="popupActions"><button onclick="routeToCamp(\''+c.id+'\')">Show route</button><button onclick="openGoogleMaps(\''+c.id+'\')">Google Maps ↗</button></div>');
   marker.on('click',()=>{});
   campMarkers.push(marker);
  });
@@ -236,8 +236,6 @@ async function calculateRoute(c){
   if(data.code!=='Ok'||!data.routes||!data.routes.length)throw new Error('No road route was returned.');
   const route=data.routes[0],coords=route.geometry.coordinates.map(p=>[p[1],p[0]]);
   routeLayer=L.polyline(coords,{color:'#00a884',weight:6,opacity:.9}).addTo(map);
-  L.circleMarker(start,{radius:6,color:'#fff',weight:2,fillColor:'#168dd0',fillOpacity:1}).addTo(routeLayer);
-  L.circleMarker([c.lat,c.lng],{radius:7,color:'#fff',weight:2,fillColor:'#32a85c',fillOpacity:1}).addTo(routeLayer);
   map.fitBounds(routeLayer.getBounds(),{padding:[35,35]});
   const km=(route.distance/1000).toFixed(1),mins=Math.max(1,Math.round(route.duration/60));
   const nearHazard=hazards.some(h=>coords.some(p=>haversine(p[0],p[1],h.lat,h.lng)<0.25));
