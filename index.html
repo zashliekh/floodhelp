@@ -118,7 +118,7 @@ function renderCamps(){
  }).join('');
 }
 function campDetails(i){const panel=document.getElementById('camp-extra-'+i);if(panel)panel.classList.toggle('hidden')}
-function openCampRoute(i){const c=camps[i];const url='https://www.google.com/maps/dir/?api=1&destination='+c.lat+','+c.lng;window.open(url,'_blank','noopener')}
+function openCampRoute(i){const c=camps[i];const url='https://www.google.com/maps/dir/?api=1&destination='+encodeURIComponent(c.name);window.open(url,'_blank','noopener')}
 function openSOS(){document.getElementById('modal').classList.remove('hidden');selected=null;document.getElementById('selected').textContent='No request selected.'}
 function closeSOS(){document.getElementById('modal').classList.add('hidden')}
 function selectNeed(el,need,priority){document.querySelectorAll('.choices button').forEach(b=>b.classList.remove('selected'));el.classList.add('selected');selected={need,priority};document.getElementById('selected').textContent='Selected: '+need+' • Location selected'}
