@@ -15,7 +15,7 @@ main{padding:20px}.hero{background:linear-gradient(135deg,#0b7285,#087f8c);color
 .pin{position:absolute;transform:translate(-50%,-50%);font-size:25px;z-index:3}.you{left:24%;top:67%}.a{left:65%;top:28%}.b{left:76%;top:70%}.c{left:35%;top:23%}
 .legend{position:absolute;bottom:12px;left:12px;background:white;padding:10px;border-radius:10px;font-size:12px;z-index:5}.road{position:absolute;height:8px;background:#777;transform-origin:left center;z-index:2}.blocked{background:#d62828}.r1{left:24%;top:67%;width:47%;transform:rotate(-31deg)}.r2{left:24%;top:67%;width:56%;transform:rotate(2deg)}
 .badge{display:inline-block;padding:4px 8px;border-radius:999px;font-size:12px;font-weight:800}.green{background:#d8f3dc;color:#176b35}.orange{background:#ffe8c2;color:#925500}.red{background:#ffd6d6;color:#9d1616}
-.list{display:grid;gap:12px}.camp{display:flex;justify-content:space-between;gap:12px;align-items:center;border:1px solid #dde8ec;border-radius:12px;padding:14px}.camp button{background:#087f8c;color:white}.hidden{display:none}.modal{position:fixed;inset:0;background:#0008;display:flex;align-items:center;justify-content:center;padding:18px;z-index:20}.modalbox{background:white;max-width:500px;width:100%;border-radius:18px;padding:22px}.choices{display:grid;grid-template-columns:1fr 1fr;gap:10px}.choices button{background:#edf5f7;text-align:left}.choices button.selected{outline:3px solid #087f8c}.primary{background:#087f8c;color:white}.notice{padding:12px;border-radius:10px;background:#fff5d6;margin:12px 0;font-size:13px}
+.list{display:grid;gap:12px}.camp{display:flex;justify-content:space-between;gap:12px;align-items:center;border:1px solid #dde8ec;border-radius:12px;padding:14px}.camp button{background:#087f8c;color:white}.hidden{display:none}.modal{position:fixed;inset:0;background:#0008;display:flex;align-items:center;justify-content:center;padding:18px;z-index:20}.modalbox{background:white;max-width:500px;width:100%;border-radius:18px;padding:22px}.choices{display:grid;grid-template-columns:1fr 1fr;gap:10px}.choices button{background:#edf5f7;text-align:left}.choices button.selected{outline:3px solid #087f8c}.primary{background:#087f8c;color:white}.notice{padding:12px;border-radius:10px;background:#fff5d6;margin:12px 0;font-size:13px}.camp-card{border:1px solid #dce7eb;border-radius:15px;padding:16px;background:#fff;box-shadow:0 3px 12px #0b39540d}.camp-head{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}.camp-meta{font-size:12px;color:#58727f;margin-top:5px}.camp-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:13px 0}.camp-stat{background:#f2f7f8;padding:10px;border-radius:10px}.camp-stat b{display:block;font-size:18px}.camp-stat span{font-size:11px;color:#58727f}.capacity{height:8px;background:#e7eef0;border-radius:99px;overflow:hidden;margin-top:7px}.capacity>i{display:block;height:100%;background:#087f8c;border-radius:99px}.resource-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:12px 0}.resource{background:#f6f9fa;border-radius:9px;padding:9px;font-size:13px}.resource b{display:block;font-size:12px;margin-bottom:3px}.camp-detail{border-top:1px solid #e3ecef;margin-top:13px;padding-top:12px}.camp-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}.camp-actions button{flex:1}.muted-note{font-size:11px;color:#718894}
 @media(max-width:600px){main{padding:14px}.map{height:360px}.top{padding:15px}.brand{font-size:20px}}
 </style>
 </head>
@@ -54,8 +54,11 @@ main{padding:20px}.hero{background:linear-gradient(135deg,#0b7285,#087f8c);color
 
 <section id="camps" class="hidden">
 <h2>🏕️ Nearby Relief Camps</h2>
-<p class="small">Sorted by estimated distance from your selected location.</p>
+<p class="small">Compare camp capacity, essential supplies, medical support and access conditions before choosing a destination.</p>
+<div class="notice">⚠️ Camp figures below are demonstration data. During a real emergency, confirm availability and route safety with the camp coordinator or local authorities before travelling.</div>
+<div class="grid" id="campSummary"></div>
 <div class="list" id="campList"></div>
+<p class="muted-note">Availability can change quickly during a flood. Always follow official evacuation instructions.</p>
 </section>
 
 <section id="rescue" class="hidden">
@@ -88,9 +91,9 @@ main{padding:20px}.hero{background:linear-gradient(135deg,#0b7285,#087f8c);color
 
 <script>
 const camps=[
-{name:"Green Valley Relief Camp",dist:"1.8 km",cap:"300",occ:"180",food:"Available",water:"Available",medical:"Available"},
-{name:"Riverside Community Camp",dist:"2.4 km",cap:"200",occ:"195",food:"Available",water:"Limited",medical:"No"},
-{name:"Hillview Evacuation Centre",dist:"3.1 km",cap:"450",occ:"210",food:"Available",water:"Available",medical:"Available"}
+{name:"Green Valley Relief Camp",dist:"1.8 km",cap:300,occ:180,food:"Available",water:"Available",medical:"Available",firstAid:"Available",shelter:"Available",power:"Available",toilets:"Available",access:"Safe",coordinator:"Camp coordination desk",phone:"Confirm locally",updated:"Demo record • 10 min ago",type:"General relief",notes:"General accommodation and essential relief support."},
+{name:"Riverside Community Camp",dist:"2.4 km",cap:200,occ:195,food:"Available",water:"Limited",medical:"Unavailable",firstAid:"Limited",shelter:"Available",power:"Limited",toilets:"Available",access:"Caution",coordinator:"Camp coordination desk",phone:"Confirm locally",updated:"Demo record • 15 min ago",type:"Community shelter",notes:"Near capacity. Confirm space and water supply before proceeding."},
+{name:"Hillview Evacuation Centre",dist:"3.1 km",cap:450,occ:210,food:"Available",water:"Available",medical:"Available",firstAid:"Available",shelter:"Available",power:"Available",toilets:"Available",access:"Safe",coordinator:"Camp coordination desk",phone:"Confirm locally",updated:"Demo record • 5 min ago",type:"Medical support",notes:"Demonstration listing with medical-support facilities."}
 ];
 let selected=null, requests=[
 ["Household A","Rescue / trapped","critical","2 min ago"],
@@ -98,8 +101,24 @@ let selected=null, requests=[
 ["Area C","Drinking water","important","11 min ago"]
 ];
 function show(id,btn){document.querySelectorAll('main section').forEach(s=>s.classList.add('hidden'));document.getElementById(id).classList.remove('hidden');document.querySelectorAll('nav button').forEach(b=>b.classList.remove('active'));btn.classList.add('active');if(id==='camps')renderCamps();if(id==='rescue')renderRequests()}
-function renderCamps(){document.getElementById('campList').innerHTML=camps.map((c,i)=>`<div class="camp"><div><b>🏕️ ${c.name}</b><br><span class="small">${c.dist} • ${c.occ}/${c.cap} occupied</span><br><span class="badge green">Food</span> <span class="badge green">Water</span> <span class="badge ${c.medical==='Available'?'green':'orange'}">Medical: ${c.medical}</span></div><button onclick="campDetails(${i})">View</button></div>`).join('')}
-function campDetails(i){let c=camps[i];alert(`${c.name}\\n\\nDistance: ${c.dist}\\nCapacity: ${c.cap}\\nOccupied: ${c.occ}\\nFood: ${c.food}\\nWater: ${c.water}\\nMedical: ${c.medical}\\n\\nOpen the route in Google Maps.`)}
+function statusBadge(value){const good=value==="Available"||value==="Safe";const warn=value==="Limited"||value==="Caution";return '<span class="badge '+(good?'green':warn?'orange':'red')+'">'+value+'</span>'}
+function renderCamps(){
+ const ordered=camps.slice().sort((a,b)=>distance(user,a)-distance(user,b));
+ const openCount=ordered.filter(c=>c.access==="Safe"&&c.cap-c.occ>0).length;
+ document.getElementById('campSummary').innerHTML='<div class="card"><div class="small">Listed camps</div><div class="metric">'+camps.length+'</div></div><div class="card"><div class="small">With remaining capacity</div><div class="metric">'+ordered.filter(c=>c.cap>c.occ).length+'</div></div><div class="card"><div class="small">Marked safe in demo data</div><div class="metric">'+openCount+'</div></div>';
+ document.getElementById('campList').innerHTML=ordered.map(c=>{
+  const idx=camps.indexOf(c),space=Math.max(0,c.cap-c.occ),pct=Math.min(100,Math.round(c.occ/c.cap*100));
+  return '<article class="camp-card"><div class="camp-head"><div><b>🏕️ '+c.name+'</b><div class="camp-meta">'+c.type+' • '+distance(user,c).toFixed(1)+' km away</div></div>'+statusBadge(c.access)+'</div>'+
+  '<div class="camp-stats"><div class="camp-stat"><b>'+space+'</b><span>Spaces left*</span></div><div class="camp-stat"><b>'+c.occ+'/'+c.cap+'</b><span>Occupancy*</span></div><div class="camp-stat"><b>'+pct+'%</b><span>Capacity used*</span></div></div>'+
+  '<div class="capacity"><i style="width:'+pct+'%"></i></div>'+
+  '<div class="resource-grid"><div class="resource">🍚 <b>Food supply</b>'+statusBadge(c.food)+'</div><div class="resource">💧 <b>Drinking water</b>'+statusBadge(c.water)+'</div><div class="resource">🏥 <b>Medical support</b>'+statusBadge(c.medical)+'</div><div class="resource">🩹 <b>First aid</b>'+statusBadge(c.firstAid)+'</div></div>'+
+  '<button class="primary" onclick="campDetails('+idx+')">View full camp information</button>'+
+  '<div id="camp-extra-'+idx+'" class="camp-detail hidden"><b>Facilities & services</b><div class="resource-grid"><div class="resource">🛏️ <b>Shelter / sleeping space</b>'+statusBadge(c.shelter)+'</div><div class="resource">⚡ <b>Electricity</b>'+statusBadge(c.power)+'</div><div class="resource">🚻 <b>Toilets & sanitation</b>'+statusBadge(c.toilets)+'</div><div class="resource">🚧 <b>Access condition</b>'+statusBadge(c.access)+'</div></div><p class="small">'+c.notes+'</p><p class="small"><b>Coordinator:</b> '+c.coordinator+'<br><b>Contact:</b> '+c.phone+'<br><b>Information updated:</b> '+c.updated+'</p><div class="camp-actions"><button onclick="openCampRoute('+idx+')">Open directions</button><button class="secondary" onclick="document.getElementById(\'camp-extra-'+idx+'\').classList.add(\'hidden\')">Close details</button></div></div>'+
+  '<div class="muted-note">*Illustrative occupancy figures; verify before travel.</div></article>';
+ }).join('');
+}
+function campDetails(i){const panel=document.getElementById('camp-extra-'+i);if(panel)panel.classList.toggle('hidden')}
+function openCampRoute(i){const c=camps[i];const url='https://www.google.com/maps/dir/?api=1&destination='+c.lat+','+c.lng;window.open(url,'_blank','noopener')}
 function openSOS(){document.getElementById('modal').classList.remove('hidden');selected=null;document.getElementById('selected').textContent='No request selected.'}
 function closeSOS(){document.getElementById('modal').classList.add('hidden')}
 function selectNeed(el,need,priority){document.querySelectorAll('.choices button').forEach(b=>b.classList.remove('selected'));el.classList.add('selected');selected={need,priority};document.getElementById('selected').textContent='Selected: '+need+' • Location selected'}
