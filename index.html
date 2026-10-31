@@ -75,14 +75,12 @@ main{padding:20px}.hero{background:linear-gradient(135deg,#0b7285,#087f8c);color
 </div>
 
 <div id="modal" class="modal hidden"><div class="modalbox">
-<h2>🆘 Request Help</h2><p>Choose the most urgent need.</p>
+<h2>🆘 Request Help</h2><p>Select the person who needs priority assistance.</p>
 <div class="choices" id="choices">
-<button onclick="selectNeed(this,'Rescue / trapped','critical')">🛟 Rescue / trapped</button>
-<button onclick="selectNeed(this,'Medical emergency','critical')">🏥 Medical emergency</button>
-<button onclick="selectNeed(this,'Elderly / child assistance','urgent')">👴 Elderly / child</button>
-<button onclick="selectNeed(this,'Medicine','important')">💊 Medicine</button>
-<button onclick="selectNeed(this,'Drinking water','important')">💧 Water</button>
-<button onclick="selectNeed(this,'Food','important')">🍚 Food</button>
+<button onclick="selectNeed(this,'Child','urgent')">👶 Child</button>
+<button onclick="selectNeed(this,'Elderly','urgent')">👴 Elderly</button>
+<button onclick="selectNeed(this,'Pregnant','urgent')">🤰 Pregnant</button>
+<button onclick="selectNeed(this,'Injured','critical')">🩹 Injured</button>
 </div>
 <p id="selected" class="small">No request selected.</p>
 <button class="primary" onclick="sendSOS()">SEND SOS WITH LOCATION 📍</button>
